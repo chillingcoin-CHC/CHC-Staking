@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CHC Staking Lounge</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.7.5/dist/web3.min.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #101010; color: #fff; text-align: center; padding: 50px; }
+    .container { max-width: 600px; margin: auto; }
+    button { background: #ffd700; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+    input { padding: 10px; width: 80%; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🐧 CHC Staking Lounge</h1>
+    <p>Stake your CHC tokens and earn 15% APY.</p>
+    <button onclick="connectWallet()">Connect Wallet</button><br/><br/>
+    <input type="text" id="amount" placeholder="Enter amount (min 10M CHC)" /><br/>
+    <button onclick="stakeChill()">Stake 14 Days (Chill)</button>
+    <button onclick="stakeDeep()">Stake 30 Days (Deep Chill)</button>
+    <br/><br/>
+    <button onclick="claim()">Claim</button>
+    <p id="status"></p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
