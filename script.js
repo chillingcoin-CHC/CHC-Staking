@@ -1,8 +1,37 @@
-
 let web3;
 let contract;
-const contractAddress = "YOUR_DEPLOYED_CONTRACT_ADDRESS";
-const abi = [ /* Insert ABI here */ ];
+const contractAddress = "0xc50e66bca472da61d0184121e491609b774e2c37";
+const abi = [
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint8", "name": "tier", "type": "uint8" }
+    ],
+    "name": "stake",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "stakes",
+    "outputs": [
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+      { "internalType": "uint8", "name": "tier", "type": "uint8" },
+      { "internalType": "bool", "name": "claimed", "type": "bool" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 async function connectWallet() {
   if (window.ethereum) {
