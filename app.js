@@ -6,7 +6,6 @@ let tokenContract;
 const CHC_ADDRESS = "0xc50e66bca472da61d0184121e491609b774e2c37";
 const STAKING_ADDRESS = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3";
 
-// ABI for CHC Staking Contract
 const STAKING_ABI = [
   { "inputs":[{ "internalType":"address", "name":"_chcToken", "type":"address" }], "stateMutability":"nonpayable", "type":"constructor" },
   { "inputs":[], "name":"MAX_STAKE", "outputs":[{ "internalType":"uint256", "name":"", "type":"uint256" }], "stateMutability":"view", "type":"function" },
@@ -19,7 +18,6 @@ const STAKING_ABI = [
   { "inputs":[{ "internalType":"uint256", "name":"index", "type":"uint256" }], "name":"unstake", "outputs":[], "stateMutability":"nonpayable", "type":"function" }
 ];
 
-// Basic ERC20 ABI (approve + balanceOf)
 const ERC20_ABI = [
   {
     constant: true,
@@ -38,19 +36,8 @@ const ERC20_ABI = [
     outputs: [{ name: "success", type: "bool" }],
     type: "function",
   },
-  {
-    constant: true,
-    inputs: [
-      { name: "_owner", type: "address" },
-      { name: "_spender", type: "address" },
-    ],
-    name: "allowance",
-    outputs: [{ name: "remaining", type: "uint256" }],
-    type: "function",
-  },
 ];
 
-// Connect Wallet Button
 async function connectWallet() {
   const providerOptions = {
     walletconnect: {
@@ -61,11 +48,7 @@ async function connectWallet() {
     }
   };
 
-  const web3Modal = new window.Web3Modal.default({
-    cacheProvider: false,
-    providerOptions
-  });
-
+  const web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions });
   const provider = await web3Modal.connect();
   web3 = new Web3(provider);
   const accounts = await web3.eth.getAccounts();
@@ -78,46 +61,33 @@ async function connectWallet() {
   loadStakedBalance();
 }
 
-// Show Wallet Balance
 async function loadWalletBalance() {
   const balance = await tokenContract.methods.balanceOf(account).call();
   const formatted = web3.utils.fromWei(balance, "ether");
   document.getElementById("walletBalance").innerText = `💰 Wallet Balance: ${formatted} CHC`;
 }
 
-// Stake CHC
 async function stakeTokens() {
-  const amountInput = document.getElementById("amount").value.trim();
+  const amountInput = document.getElementById("amount").value;
   const tier = document.getElementById("tierSelect").value;
-
-  if (!amountInput || isNaN(amountInput) || Number(amountInput) <= 0) {
-    alert("Enter a valid CHC amount to stake.");
-    return;
-  }
-
   const amount = web3.utils.toWei(amountInput, "ether");
 
   try {
-    const allowance = await tokenContract.methods.allowance(account, STAKING_ADDRESS).call();
-    if (BigInt(allowance) < BigInt(amount)) {
-      const maxApproval = web3.utils.toWei("1000000000000", "ether"); // Approve 1 trillion CHC
-      await tokenContract.methods.approve(STAKING_ADDRESS, maxApproval).send({ from: account });
-      console.log("✅ Approved max allowance.");
-    } else {
-      console.log("✅ Already approved.");
-    }
+    await tokenContract.methods
+      .approve(STAKING_ADDRESS, amount)
+      .send({ from: account });
 
-    await stakingContract.methods.stake(amount, tier).send({ from: account });
-    alert("✅ Stake successful!");
+    await stakingContract.methods
+      .stake(amount, tier)
+      .send({ from: account });
+
     loadStakedBalance();
     loadWalletBalance();
   } catch (err) {
-    console.error("❌ Stake error:", err);
-    alert("❌ Transaction failed: " + (err.message || err));
+    alert("❌ Transaction failed: " + (err?.message || err));
   }
 }
 
-// Show Stake Status
 async function loadStakedBalance() {
   try {
     const stakes = await stakingContract.methods.getStakeInfo(account).call();
@@ -140,13 +110,12 @@ async function loadStakedBalance() {
     const unlockDate = new Date(unlockTimestamp * 1000).toLocaleDateString();
 
     document.getElementById("stakeStatus").innerText =
-      `🧊 You staked ${amount} CHC in ${tierLabel} — unlocks on ${unlockDate}`;
+      `🧊 You have staked ${amount} CHC in ${tierLabel} (unlocks on ${unlockDate})`;
   } catch (error) {
-    console.error("Stake info error:", error);
+    console.error("Stake info load failed:", error);
     document.getElementById("stakeStatus").innerText = "Error reading stake info.";
   }
 }
 
-// Attach buttons
 document.getElementById("connectButton").onclick = connectWallet;
 document.getElementById("stakeButton").onclick = stakeTokens;
