@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CHC Staking Lounge</title>
 
-  <!-- Web3 + WalletConnect -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <script src="https://unpkg.com/web3modal"></script>
   <script src="https://unpkg.com/@walletconnect/web3-provider"></script>
@@ -14,7 +13,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-image: url('penguin-background.jpg'); /* 🐧 Make sure this file exists */
+      background-image: url('penguin-background.jpg');
       background-size: cover;
       background-position: center;
       background-color: #111;
@@ -65,26 +64,136 @@
   </style>
 </head>
 <body>
-
   <div class="container">
     <h1>❄️ CHC Staking Lounge</h1>
-    
     <button id="connectButton">Connect Wallet</button>
-
     <input type="text" id="amount" placeholder="Enter amount of CHC to stake" />
-    
     <select id="tierSelect">
       <option value="0">Chill Stake (14 days)</option>
       <option value="1">Deep Chill (30 days)</option>
     </select>
-    
     <button id="stakeButton">Stake CHC</button>
-
-    <div id="walletBalance">💰 Wallet Balance: --</div>
+    <div id="walletBalance"></div>
     <div id="stakeStatus"></div>
   </div>
 
-  <!-- This links your logic -->
-  <script src="app.js"></script>
+  <script>
+    const CHC_ADDRESS = "0xc50e66bca472da61d0184121e491609b774e2c37";
+    const STAKING_ADDRESS = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3";
+
+    const STAKING_ABI = [
+      { "inputs":[{ "internalType":"address", "name":"_chcToken", "type":"address" }], "stateMutability":"nonpayable", "type":"constructor" },
+      { "inputs":[], "name":"MAX_STAKE", "outputs":[{ "internalType":"uint256", "name":"", "type":"uint256" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[], "name":"chcToken", "outputs":[{ "internalType":"contract IERC20", "name":"", "type":"address" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[{ "internalType":"address", "name":"user", "type":"address" }], "name":"getLockedAmount", "outputs":[{ "internalType":"uint256", "name":"totalLocked", "type":"uint256" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[{ "internalType":"address", "name":"user", "type":"address" }], "name":"getStakeInfo", "outputs":[{ "components":[{ "internalType":"uint256", "name":"amount", "type":"uint256" },{ "internalType":"uint256", "name":"startTime", "type":"uint256" },{ "internalType":"enum CHCStaking.Tier", "name":"tier", "type":"uint8" },{ "internalType":"bool", "name":"withdrawn", "type":"bool" }], "internalType":"struct CHCStaking.Stake[]", "name":"", "type":"tuple[]" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[{ "internalType":"uint256", "name":"amount", "type":"uint256" },{ "internalType":"enum CHCStaking.Tier", "name":"tier", "type":"uint8" }], "name":"stake", "outputs":[], "stateMutability":"nonpayable", "type":"function" },
+      { "inputs":[{ "internalType":"address", "name":"", "type":"address" },{ "internalType":"uint256", "name":"", "type":"uint256" }], "name":"stakes", "outputs":[{ "internalType":"uint256", "name":"amount", "type":"uint256" },{ "internalType":"uint256", "name":"startTime", "type":"uint256" },{ "internalType":"enum CHCStaking.Tier", "name":"tier", "type":"uint8" },{ "internalType":"bool", "name":"withdrawn", "type":"bool" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[{ "internalType":"address", "name":"", "type":"address" }], "name":"totalStaked", "outputs":[{ "internalType":"uint256", "name":"", "type":"uint256" }], "stateMutability":"view", "type":"function" },
+      { "inputs":[{ "internalType":"uint256", "name":"index", "type":"uint256" }], "name":"unstake", "outputs":[], "stateMutability":"nonpayable", "type":"function" }
+    ];
+
+    const ERC20_ABI = [
+      {
+        constant: true,
+        inputs: [{ name: "_owner", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "balance", type: "uint256" }],
+        type: "function",
+      },
+      {
+        constant: false,
+        inputs: [
+          { name: "_spender", type: "address" },
+          { name: "_value", type: "uint256" },
+        ],
+        name: "approve",
+        outputs: [{ name: "success", type: "bool" }],
+        type: "function",
+      },
+    ];
+
+    let web3;
+    let account;
+    let stakingContract;
+    let tokenContract;
+
+    async function connectWallet() {
+      const providerOptions = {
+        walletconnect: {
+          package: window.WalletConnectProvider.default,
+          options: {
+            rpc: { 56: "https://bsc-dataseed.binance.org/" }
+          }
+        }
+      };
+
+      const web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions });
+      const provider = await web3Modal.connect();
+      web3 = new Web3(provider);
+      const accounts = await web3.eth.getAccounts();
+      account = accounts[0];
+
+      stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_ADDRESS);
+      tokenContract = new web3.eth.Contract(ERC20_ABI, CHC_ADDRESS);
+
+      loadWalletBalance();
+      loadStakedBalance();
+    }
+
+    async function loadWalletBalance() {
+      const balance = await tokenContract.methods.balanceOf(account).call();
+      const formatted = web3.utils.fromWei(balance, "ether");
+      document.getElementById("walletBalance").innerText = `💰 Wallet Balance: ${formatted} CHC`;
+    }
+
+    async function stakeTokens() {
+      const amountInput = document.getElementById("amount").value;
+      const tier = document.getElementById("tierSelect").value;
+      const amount = web3.utils.toWei(amountInput, "ether");
+
+      try {
+        await tokenContract.methods.approve(STAKING_ADDRESS, amount).send({ from: account });
+        await stakingContract.methods.stake(amount, tier).send({ from: account });
+        loadStakedBalance();
+        loadWalletBalance();
+      } catch (err) {
+        alert("Transaction failed: " + err.message);
+      }
+    }
+
+    async function loadStakedBalance() {
+      try {
+        const stakes = await stakingContract.methods.getStakeInfo(account).call();
+        if (!stakes || stakes.length === 0) {
+          document.getElementById("stakeStatus").innerText = "You haven’t staked yet.";
+          return;
+        }
+
+        const active = stakes.find((s) => s.withdrawn === false);
+        if (!active) {
+          document.getElementById("stakeStatus").innerText = "You haven’t staked yet.";
+          return;
+        }
+
+        const amount = web3.utils.fromWei(active.amount, "ether");
+        const tierValue = Number(active.tier);
+        const tierLabel = tierValue === 0 ? "Chill Stake" : "Deep Chill";
+        const durationDays = tierValue === 0 ? 14 : 30;
+        const unlockTimestamp = parseInt(active.startTime) + durationDays * 86400;
+        const unlockDate = new Date(unlockTimestamp * 1000).toLocaleDateString();
+
+        document.getElementById("stakeStatus").innerText =
+          `🧊 You have staked ${amount} CHC in ${tierLabel} (unlocks on ${unlockDate})`;
+
+      } catch (error) {
+        console.error("Stake read error:", error);
+        document.getElementById("stakeStatus").innerText = "Error reading stake info.";
+      }
+    }
+
+    document.getElementById("connectButton").onclick = connectWallet;
+    document.getElementById("stakeButton").onclick = stakeTokens;
+  </script>
 </body>
 </html>
