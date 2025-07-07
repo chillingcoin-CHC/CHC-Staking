@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CHC Staking Lounge</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+</head>
+<body>
+  <div class="container">
+    <img src="penguin.png" alt="CHC Penguin" class="penguin"/>
+    <h1>Welcome to the<br/>CHC Staking Lounge</h1>
+
+    <div class="tier-boxes">
+      <div class="tier">
+        <h2>Chill Stake</h2>
+        <p>14 Day Lock</p>
+        <p class="apy">15% APY</p>
+      </div>
+      <div class="tier">
+        <h2>Deep Chill</h2>
+        <p>30 Day Lock</p>
+        <p class="apy">15% APY</p>
+      </div>
+    </div>
+
+    <button id="connectButton">Connect Wallet</button>
+
+    <div class="form">
+      <input type="number" id="amount" placeholder="Stake Amount" min="0"/>
+      <select id="tierSelect">
+        <option value="0">Chill Stake</option>
+        <option value="1">Deep Chill</option>
+      </select>
+      <button id="stakeButton">Stake</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
