@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CHC Staking Lounge</title>
 
+  <!-- Web3 + WalletConnect -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <script src="https://unpkg.com/web3modal"></script>
   <script src="https://unpkg.com/@walletconnect/web3-provider"></script>
@@ -13,7 +14,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-image: url('penguin-background.jpg'); /* 🐧 Replace with your penguin image path */
+      background-image: url('penguin-background.jpg'); /* 🐧 Make sure this file exists */
       background-size: cover;
       background-position: center;
       background-color: #111;
@@ -79,10 +80,11 @@
     
     <button id="stakeButton">Stake CHC</button>
 
-    <div id="walletBalance"></div>
+    <div id="walletBalance">💰 Wallet Balance: --</div>
     <div id="stakeStatus"></div>
   </div>
 
-  <script src="app.js"></script> <!-- Load the staking logic -->
+  <!-- This links your logic -->
+  <script src="app.js"></script>
 </body>
 </html>
