@@ -4,43 +4,85 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CHC Staking Lounge</title>
-  <link rel="stylesheet" href="style.css"/>
+
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
-  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+  <script src="https://unpkg.com/web3modal"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-image: url('penguin-background.jpg'); /* 🐧 Replace with your penguin image path */
+      background-size: cover;
+      background-position: center;
+      background-color: #111;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 20px #00f2ff80;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      background-color: #00f2ff;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #00a8b5;
+    }
+
+    #walletBalance, #stakeStatus {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
+
   <div class="container">
-    <img src="penguin.png" alt="CHC Penguin" class="penguin"/>
-    <h1>Welcome to the<br/>CHC Staking Lounge</h1>
-
-    <div class="tier-boxes">
-      <div class="tier">
-        <h2>Chill Stake</h2>
-        <p>14 Day Lock</p>
-        <p class="apy">15% APY</p>
-      </div>
-      <div class="tier">
-        <h2>Deep Chill</h2>
-        <p>30 Day Lock</p>
-        <p class="apy">15% APY</p>
-      </div>
-    </div>
-
+    <h1>❄️ CHC Staking Lounge</h1>
+    
     <button id="connectButton">Connect Wallet</button>
 
-    <!-- ✅ NEW: Stake info output -->
-    <div id="stakeStatus" style="color: white; margin-top: 20px;"></div>
+    <input type="text" id="amount" placeholder="Enter amount of CHC to stake" />
+    
+    <select id="tierSelect">
+      <option value="0">Chill Stake (14 days)</option>
+      <option value="1">Deep Chill (30 days)</option>
+    </select>
+    
+    <button id="stakeButton">Stake CHC</button>
 
-    <div class="form">
-      <input type="number" id="amount" placeholder="Stake Amount" min="0"/>
-      <select id="tierSelect">
-        <option value="0">Chill Stake</option>
-        <option value="1">Deep Chill</option>
-      </select>
-      <button id="stakeButton">Stake</button>
-    </div>
+    <div id="walletBalance"></div>
+    <div id="stakeStatus"></div>
   </div>
-  <script src="app.js"></script>
+
+  <script src="app.js"></script> <!-- Load the staking logic -->
 </body>
 </html>
