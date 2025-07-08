@@ -137,35 +137,43 @@ document.getElementById("approve").addEventListener("click", async () => {
   const amountInWei = web3.utils.toWei(amount);
   try {
     await chcToken.methods.approve(STAKING_ADDRESS, amountInWei).send({ from: account });
-    alert("Approved successfully!");
+    alert("✅ Approved successfully!");
   } catch (err) {
     console.error("Approve error:", err);
-    alert("Approve failed. Check console for details.");
+    alert("❌ Approve failed. Check console for details.");
   }
 });
 
 document.getElementById("stake").addEventListener("click", async () => {
-  const amount = document.getElementById("amount").value;
-  const tier = document.querySelector('input[name="tier"]:checked')?.value;
+  const amount = document.getElementById("amount").value.trim();
+  const tierRaw = document.querySelector('input[name="tier"]:checked')?.value;
 
-  if (!amount || isNaN(amount)) return alert("Enter a valid amount");
-  if (tier !== "0" && tier !== "1") return alert("Select a staking tier");
-
-  const amountInWei = web3.utils.toWei(amount);
-  const allowance = await chcToken.methods.allowance(account, STAKING_ADDRESS).call();
-
-  if (BigInt(allowance) < BigInt(amountInWei)) {
-    return alert("You must approve the amount before staking.");
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    return alert("❗ Enter a valid CHC amount");
   }
 
+  if (tierRaw !== "0" && tierRaw !== "1") {
+    return alert("❗ Select a valid staking tier (Chill or Deep Chill)");
+  }
+
+  const tier = parseInt(tierRaw); // ✅ convert string to uint8
+  const amountInWei = web3.utils.toWei(amount);
+
   try {
-    await stakingContract.methods.stake(amountInWei, parseInt(tier)).send({
+    const allowance = await chcToken.methods.allowance(account, STAKING_ADDRESS).call();
+    if (BigInt(allowance) < BigInt(amountInWei)) {
+      return alert("⚠ You must approve this amount before staking.");
+    }
+
+    // ✅ Send with fixed gas amount
+    await stakingContract.methods.stake(amountInWei, tier).send({
       from: account,
       gas: 300000
     });
-    alert("Staked successfully!");
+
+    alert("✅ Staked successfully!");
   } catch (err) {
     console.error("Stake error:", err);
-    alert("Stake failed. Check console for error.");
+    alert("❌ Stake failed. Check the console for details.");
   }
 });
