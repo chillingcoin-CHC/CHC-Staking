@@ -13,16 +13,18 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - name: Setup Pages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v3
 
-      - name: Upload static site
+      - name: Upload static files
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./
+          path: .  # ✅ this includes your index.html and app.js in the repo root
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v3
