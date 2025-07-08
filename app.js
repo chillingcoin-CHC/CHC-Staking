@@ -81,17 +81,53 @@ const web3Modal = new Web3Modal({
 });
 
 document.getElementById("connectWallet").addEventListener("click", async () => {
-  const provider = await web3Modal.connect();
-  web3 = new Web3(provider);
-  const accounts = await web3.eth.getAccounts();
-  account = accounts[0];
-  chcToken = new web3.eth.Contract(CHC_ABI, CHC_ADDRESS);
-  stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_ADDRESS);
+  try {
+    const provider = await web3Modal.connect();
+    web3 = new Web3(provider);
+    const accounts = await web3.eth.getAccounts();
+    account = accounts[0];
+    chcToken = new web3.eth.Contract(CHC_ABI, CHC_ADDRESS);
+    stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_ADDRESS);
 
-  document.getElementById("walletAddress").innerText = `Connected: ${account}`;
+    document.getElementById("walletAddress").innerText = Connected: ${account};
 
-  const balance = await chcToken.methods.balanceOf(account).call();
-  document.getElementById("chcBalance").innerText = `Balance: ${web3.utils.fromWei(balance)} CHC`;
+    // ✅ Network check & switch to BSC
+    const chainId = await web3.eth.getChainId();
+    if (chainId !== 56 && window.ethereum) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x38" }]
+        });
+      } catch (err) {
+        if (err.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: "0x38",
+              chainName: "BNB Smart Chain",
+              nativeCurrency: {
+                name: "BNB",
+                symbol: "BNB",
+                decimals: 18
+              },
+              rpcUrls: ["https://bsc-dataseed.binance.org/"],
+              blockExplorerUrls: ["https://bscscan.com"]
+            }]
+          });
+        } else {
+          alert("Please switch your wallet to BNB Smart Chain.");
+        }
+      }
+    }
+
+    // ✅ Display CHC balance
+    const balance = await chcToken.methods.balanceOf(account).call();
+    document.getElementById("chcBalance").innerText = Balance: ${web3.utils.fromWei(balance)} CHC;
+  } catch (err) {
+    console.error("Connection error:", err);
+    alert("Wallet connection failed.");
+  }
 });
 
 document.getElementById("approve").addEventListener("click", async () => {
@@ -125,11 +161,11 @@ document.getElementById("stake").addEventListener("click", async () => {
   try {
     await stakingContract.methods.stake(amountInWei, parseInt(tier)).send({
       from: account,
-      gas: 300000 // optional manual gas to prevent "estimate failed"
+      gas: 300000
     });
     alert("Staked successfully!");
   } catch (err) {
     console.error("Stake error:", err);
     alert("Stake failed. Check console for error.");
-  }
+  }
 });
