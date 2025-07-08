@@ -24,7 +24,7 @@ jobs:
       - name: Upload static files
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .  # ✅ this includes your index.html and app.js in the repo root
+          path: .  # ✅ Deploys all files from root (index.html, app.js, etc.)
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v3
