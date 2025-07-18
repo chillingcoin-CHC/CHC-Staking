@@ -1,5 +1,5 @@
-const stakingAddress = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3";
 const tokenAddress = "0xc50e66bca472da61d0184121e491609b774e2c37";
+const stakingAddress = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3";
 
 const stakingABI = [
   {
@@ -130,6 +130,8 @@ async function stakeTokens() {
 
   try {
     document.getElementById("status").textContent = "Approving CHC...";
+    document.getElementById("stakeBtn").innerText = "Approving...";
+
     await token.methods.approve(stakingAddress, stakeAmountWei).send({ from: selectedAccount });
 
     document.getElementById("status").textContent = "Staking...";
