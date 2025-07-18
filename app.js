@@ -1,69 +1,36 @@
-const tokenAddress = "0xc50e66bca472da61d0184121e491609b774e2c37";
-const stakingAddress = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3";
+const tokenAddress = "0xc50e66bca472da61d0184121e491609b774e2c37"; // CHC Token
+const stakingAddress = "0xa5E6F40Bd1D16d21Aeb5e89AEE50f307fc4eA0b3"; // Staking contract
 
 const stakingABI = [
   {
-    "inputs":[{"internalType":"address","name":"_chcToken","type":"address"}],
-    "stateMutability":"nonpayable","type":"constructor"
+    "inputs": [{"internalType": "address", "name": "_chcToken", "type": "address"}],
+    "stateMutability": "nonpayable", "type": "constructor"
   },
   {
-    "inputs":[],"name":"MAX_STAKE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
-    "stateMutability":"view","type":"function"
+    "inputs": [], "name": "MAX_STAKE", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view", "type": "function"
   },
   {
-    "inputs":[],"name":"chcToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],
-    "stateMutability":"view","type":"function"
+    "inputs": [{"internalType": "address", "name": "user", "type": "address"}],
+    "name": "getStakeInfo",
+    "outputs": [{
+      "components": [
+        {"internalType": "uint256", "name": "amount", "type": "uint256"},
+        {"internalType": "uint256", "name": "startTime", "type": "uint256"},
+        {"internalType": "enum CHCStaking.Tier", "name": "tier", "type": "uint8"},
+        {"internalType": "bool", "name": "withdrawn", "type": "bool"}
+      ],
+      "internalType": "struct CHCStaking.Stake[]", "name": ""
+    }],
+    "stateMutability": "view", "type": "function"
   },
   {
-    "inputs":[{"internalType":"address","name":"user","type":"address"}],
-    "name":"getLockedAmount","outputs":[{"internalType":"uint256","name":"totalLocked","type":"uint256"}],
-    "stateMutability":"view","type":"function"
-  },
-  {
-    "inputs":[{"internalType":"address","name":"user","type":"address"}],
-    "name":"getStakeInfo",
-    "outputs":[
-      {
-        "components":[
-          {"internalType":"uint256","name":"amount","type":"uint256"},
-          {"internalType":"uint256","name":"startTime","type":"uint256"},
-          {"internalType":"enum CHCStaking.Tier","name":"tier","type":"uint8"},
-          {"internalType":"bool","name":"withdrawn","type":"bool"}
-        ],
-        "internalType":"struct CHCStaking.Stake[]","name":"","type":"tuple[]"
-      }
+    "inputs": [
+      {"internalType": "uint256", "name": "amount", "type": "uint256"},
+      {"internalType": "enum CHCStaking.Tier", "name": "tier", "type": "uint8"}
     ],
-    "stateMutability":"view","type":"function"
-  },
-  {
-    "inputs":[
-      {"internalType":"uint256","name":"amount","type":"uint256"},
-      {"internalType":"enum CHCStaking.Tier","name":"tier","type":"uint8"}
-    ],
-    "name":"stake",
-    "outputs":[],"stateMutability":"nonpayable","type":"function"
-  },
-  {
-    "inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],
-    "name":"stakes",
-    "outputs":[
-      {"internalType":"uint256","name":"amount","type":"uint256"},
-      {"internalType":"uint256","name":"startTime","type":"uint256"},
-      {"internalType":"enum CHCStaking.Tier","name":"tier","type":"uint8"},
-      {"internalType":"bool","name":"withdrawn","type":"bool"}
-    ],
-    "stateMutability":"view","type":"function"
-  },
-  {
-    "inputs":[{"internalType":"address","name":"","type":"address"}],
-    "name":"totalStaked",
-    "outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
-    "stateMutability":"view","type":"function"
-  },
-  {
-    "inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],
-    "name":"unstake",
-    "outputs":[],"stateMutability":"nonpayable","type":"function"
+    "name": "stake",
+    "outputs": [], "stateMutability": "nonpayable", "type": "function"
   }
 ];
 
@@ -125,36 +92,45 @@ async function stakeTokens() {
   const tier = parseInt(document.querySelector('input[name="tier"]:checked').value);
   const stakeAmountWei = web3.utils.toWei(amount, 'ether');
 
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+
   const token = new web3.eth.Contract(tokenABI, tokenAddress);
   const staking = new web3.eth.Contract(stakingABI, stakingAddress);
 
   try {
     document.getElementById("status").textContent = "Approving CHC...";
-    document.getElementById("stakeBtn").innerText = "Approving...";
+    await token.methods.approve(stakingAddress, stakeAmountWei).send({
+      from: selectedAccount,
+      gas: 100000 // safe for approve
+    });
 
-    await token.methods.approve(stakingAddress, stakeAmountWei).send({ from: selectedAccount });
-
-    document.getElementById("status").textContent = "Staking...";
+    document.getElementById("status").textContent = "Staking CHC...";
     document.getElementById("stakeBtn").innerText = "Staking...";
 
-    await staking.methods.stake(stakeAmountWei, tier).send({ from: selectedAccount })
-      .on("transactionHash", function(hash) {
-        console.log("Tx hash:", hash);
-      })
-      .on("receipt", function(receipt) {
-        console.log("✅ Stake confirmed:", receipt);
-        alert("✅ Stake successful!");
-        window.location.reload();
-      })
-      .on("error", function(error) {
-        console.error("❌ Error:", error);
-        alert("❌ Staking failed: " + (error.message || error));
-        document.getElementById("stakeBtn").innerText = "Stake";
-        document.getElementById("status").textContent = "";
-      });
+    await staking.methods.stake(stakeAmountWei, tier).send({
+      from: selectedAccount,
+      gas: 250000 // cap gas to avoid $48
+    })
+    .on("transactionHash", function(hash) {
+      console.log("Tx hash:", hash);
+    })
+    .on("receipt", function(receipt) {
+      console.log("✅ Stake confirmed:", receipt);
+      alert("✅ Stake successful!");
+      window.location.reload();
+    })
+    .on("error", function(error) {
+      console.error("❌ Staking failed:", error);
+      alert("❌ Staking failed: " + (error.message || error));
+      document.getElementById("stakeBtn").innerText = "Stake";
+      document.getElementById("status").textContent = "";
+    });
 
   } catch (err) {
-    console.error("❌ Unexpected Error:", err);
+    console.error("❌ Error in transaction:", err);
     alert("Error: " + err.message);
     document.getElementById("stakeBtn").innerText = "Stake";
     document.getElementById("status").textContent = "";
