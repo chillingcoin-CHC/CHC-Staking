@@ -92,11 +92,10 @@ async function stakeTokens() {
   const tier = parseInt(document.querySelector('input[name="tier"]:checked').value);
   const stakeAmountWei = web3.utils.toWei(amount, 'ether');
 
-  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-    alert("Please enter a valid amount.");
-    return;
-  }
-
+  if (isNaN(tier)) {
+  alert("Please select a staking tier.");
+  return;
+}
   const token = new web3.eth.Contract(tokenABI, tokenAddress);
   const staking = new web3.eth.Contract(stakingABI, stakingAddress);
 
