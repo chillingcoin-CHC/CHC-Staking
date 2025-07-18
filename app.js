@@ -89,21 +89,41 @@ async function loadBalance() {
 
 async function stakeTokens() {
   const amount = document.getElementById("stakeAmount").value;
-  const tier = parseInt(document.querySelector('input[name="tier"]:checked').value);
-  const stakeAmountWei = web3.utils.toWei(amount, 'ether');
+  const tierInput = document.querySelector('input[name="tier"]:checked');
 
-  if (isNaN(tier)) {
-  alert("Please select a staking tier.");
-  return;
-}
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+    alert("❌ Please enter a valid staking amount.");
+    return;
+  }
+
+  if (!tierInput) {
+    alert("❌ Please select a staking tier.");
+    return;
+  }
+
+  const tier = parseInt(tierInput.value);
+  const stakeAmountWei = web3.utils.toWei(amount, 'ether');
   const token = new web3.eth.Contract(tokenABI, tokenAddress);
   const staking = new web3.eth.Contract(stakingABI, stakingAddress);
 
   try {
+    const balance = await token.methods.balanceOf(selectedAccount).call();
+    const MAX_STAKE = web3.utils.toWei("10000000000", "ether");
+
+    if (web3.utils.toBN(stakeAmountWei).gt(web3.utils.toBN(balance))) {
+      alert("❌ You don't have enough CHC.");
+      return;
+    }
+
+    if (web3.utils.toBN(stakeAmountWei).gt(web3.utils.toBN(MAX_STAKE))) {
+      alert("❌ Cannot stake more than 10,000,000,000 CHC.");
+      return;
+    }
+
     document.getElementById("status").textContent = "Approving CHC...";
     await token.methods.approve(stakingAddress, stakeAmountWei).send({
       from: selectedAccount,
-      gas: 100000 // safe for approve
+      gas: 100000
     });
 
     document.getElementById("status").textContent = "Staking CHC...";
@@ -111,7 +131,7 @@ async function stakeTokens() {
 
     await staking.methods.stake(stakeAmountWei, tier).send({
       from: selectedAccount,
-      gas: 250000 // cap gas to avoid $48
+      gas: 250000
     })
     .on("transactionHash", function(hash) {
       console.log("Tx hash:", hash);
@@ -130,11 +150,10 @@ async function stakeTokens() {
 
   } catch (err) {
     console.error("❌ Error in transaction:", err);
-    alert("Error: " + err.message);
+    alert("❌ Error: " + err.message);
     document.getElementById("stakeBtn").innerText = "Stake";
     document.getElementById("status").textContent = "";
   }
 }
 
 document.getElementById("connectWallet").addEventListener("click", init);
-document.getElementById("stakeBtn").addEventListener("click", stakeTokens);
