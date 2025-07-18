@@ -61,7 +61,29 @@ async function stakeTokens() {
   await token.methods.approve(stakingAddress, stakeAmountWei).send({ from: selectedAccount });
 
   document.getElementById("status").textContent = "Staking...";
-  await staking.methods.stake(stakeAmountWei, days).send({ from: selectedAccount });
+  try {
+    document.getElementById("stake-button").innerText = "Staking...";
+    
+    await staking.methods.stake(stakeAmountWei, days).send({ from: selectedAccount })
+        .on('transactionHash', function(hash) {
+            console.log("Transaction sent:", hash);
+        })
+        .on('receipt', function(receipt) {
+            console.log("Stake successful!", receipt);
+            alert("✅ Stake successful!");
+            window.location.reload();
+        })
+        .on('error', function(error) {
+            console.error("❌ Staking error:", error);
+            alert("❌ Staking failed: " + (error.message || error));
+            document.getElementById("stake-button").innerText = "Stake";
+        });
+
+} catch (err) {
+    console.error("Unexpected staking error:", err);
+    alert("Something went wrong: " + (err.message || err));
+    document.getElementById("stake-button").innerText = "Stake";
+}
 
   document.getElementById("status").textContent = "Stake successful!";
 }
