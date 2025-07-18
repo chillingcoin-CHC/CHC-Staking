@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CHC Staking</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="images/penguin-bg.png" />
+</head>
+<body>
+  <div class="background-overlay"></div>
+  <div class="container">
+    <h1>🐧 CHC Staking DApp</h1>
+
+    <button id="connectWallet">Connect Wallet</button>
+    <p id="walletAddress">Not connected</p>
+
+    <div class="balance">
+      <strong>Your CHC Balance:</strong> <span id="chcBalance">0</span>
+    </div>
+
+    <h2>Select a Staking Tier</h2>
+    <select id="stakingTier">
+      <option value="14">Chill Stake (14 Days)</option>
+      <option value="30">Deep Chill (30 Days)</option>
+    </select>
+
+    <input type="number" id="stakeAmount" placeholder="Enter CHC amount to stake" />
+    <button id="stakeButton">Stake</button>
+
+    <div id="stakeInfo" class="info" style="display: none;">
+      <h3>Your Active Stake</h3>
+      <p><strong>Amount:</strong> <span id="activeAmount">0</span> CHC</p>
+      <p><strong>Unlocks:</strong> <span id="unlockDate">-</span></p>
+      <button id="unstakeButton" style="display: none;">Unstake</button>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
+  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+
+  <!-- Your app logic -->
+  <script src="app.js"></script>
+</body>
+</html>
