@@ -51,6 +51,16 @@ const tokenABI = [
     "name": "approve",
     "outputs": [{"name": "", "type": "bool"}],
     "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      { "name": "owner", "type": "address" },
+      { "name": "spender", "type": "address" }
+    ],
+    "name": "allowance",
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "type": "function"
   }
 ];
 
@@ -120,18 +130,19 @@ async function stakeTokens() {
       return;
     }
 
-    document.getElementById("status").textContent = "Approving CHC...";
-    await token.methods.approve(stakingAddress, stakeAmountWei).send({
-      from: selectedAccount,
-      gas: 100000
-    });
+    const currentAllowance = await token.methods.allowance(selectedAccount, stakingAddress).call();
+    if (web3.utils.toBN(currentAllowance).lt(web3.utils.toBN(stakeAmountWei))) {
+      document.getElementById("status").textContent = "Approving CHC...";
+      await token.methods.approve(stakingAddress, stakeAmountWei).send({
+        from: selectedAccount
+      });
+    }
 
     document.getElementById("status").textContent = "Staking CHC...";
     document.getElementById("stakeBtn").innerText = "Staking...";
 
     await staking.methods.stake(stakeAmountWei, tier).send({
-      from: selectedAccount,
-      gas: 250000
+      from: selectedAccount
     })
     .on("transactionHash", function(hash) {
       console.log("Tx hash:", hash);
@@ -157,3 +168,4 @@ async function stakeTokens() {
 }
 
 document.getElementById("connectWallet").addEventListener("click", init);
+document.getElementById("stakeBtn").addEventListener("click", stakeTokens);
