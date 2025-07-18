@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CHC Staking dApp</title>
   <link rel="stylesheet" href="style.css"/>
-  
+
   <!-- Web3 Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/web3modal@1.9.12/dist/index.js"></script>
@@ -17,16 +17,19 @@
     <h1>CHC Staking</h1>
 
     <button id="connectWallet">Connect Wallet</button>
-    <p>Wallet: <span id="walletAddress">Not Connected</span></p>
-    <p>CHC Balance: <span id="chcBalance">0</span></p>
+    <p><strong>Wallet:</strong> <span id="walletAddress">Not Connected</span></p>
+    <p><strong>CHC Balance:</strong> <span id="chcBalance">0</span></p>
 
     <div class="staking-options">
-      <label><input type="radio" name="tier" value="0" checked /> Chill Stake (14 days)</label>
+      <h3>Select Tier:</h3>
+      <label><input type="radio" name="tier" value="0" checked /> Chill Stake (14 days)</label><br/>
       <label><input type="radio" name="tier" value="1" /> Deep Chill (30 days)</label>
     </div>
 
-    <input type="number" id="stakeAmount" placeholder="Enter amount to stake"/>
-    <button id="stakeBtn">Stake</button>
+    <input type="number" id="stakeAmount" placeholder="Enter amount to stake" min="0" step="any"/>
+
+    <button id="stakeBtn" onclick="stakeTokens()">Stake</button>
+
     <p id="status"></p>
   </div>
 
