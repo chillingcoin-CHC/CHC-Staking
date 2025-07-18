@@ -1,72 +1,33 @@
 body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #0d0d0d;
+  font-family: Arial, sans-serif;
   color: #fff;
-  background-image: url('images/penguin-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-  min-height: 100vh;
-}
-
-.background-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 0;
+  background-color: #121212;
 }
 
 .container {
-  position: relative;
-  z-index: 1;
   max-width: 500px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: rgba(30, 30, 30, 0.9);
+  margin: auto;
+  background: rgba(0,0,0,0.6);
+  padding: 20px;
   border-radius: 12px;
-  margin-top: 5vh;
-  box-shadow: 0 0 15px rgba(0,0,0,0.8);
-}
-
-h1, h2, h3 {
+  margin-top: 60px;
   text-align: center;
-  margin-bottom: 1rem;
-}
-
-input, select, button {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-}
-
-input, select {
-  background: #222;
-  color: #fff;
 }
 
 button {
-  background: #4fc3f7;
-  color: #000;
-  font-weight: bold;
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
-button:hover {
-  background: #29b6f6;
+input[type=number] {
+  padding: 8px;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 16px;
 }
 
-.balance, .info {
-  background: #111;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: 1rem;
+.staking-options {
+  margin: 20px 0;
 }
